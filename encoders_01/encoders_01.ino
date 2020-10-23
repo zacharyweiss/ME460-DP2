@@ -14,8 +14,8 @@ int    targetSpd1 =   35, // mm per s
        targetSpd2 =   20,
        targetSpd3 =    6, // slowest speed possible
        targetSpd4 =   10,
-       dist2      =   20, // mm
-       dist4      =   60;
+       dist2      =   10, // mm
+       dist4      =   30;
 
 // global vars
 volatile long int pulses = 0;
@@ -26,25 +26,25 @@ double v_motor           = 0,
        d_err             = 0;
 
 void setup() {
-    Serial.begin(115200);
+  Serial.begin(115200);
 
-    attachInterrupt(digitalPinToInterrupt(2),count,RISING);
-    
-    pinMode(12,OUTPUT); // Dir
-    pinMode(3,OUTPUT);  // Current
-    pinMode(9,OUTPUT);  // Break
+  attachInterrupt(digitalPinToInterrupt(2),count,RISING);
   
-    pinMode(7,INPUT);
+  pinMode(12,OUTPUT); // Dir
+  pinMode(3,OUTPUT);  // Current
+  pinMode(9,OUTPUT);  // Break
 
-    // limit switch
-    pinMode(10,INPUT_PULLUP);
+  pinMode(7,INPUT);
 
-    digitalWrite(3,LOW);   // Motor off
-    digitalWrite(9,LOW);   // Disable brake
-    digitalWrite(12,HIGH); // Set direction
+  // limit switch
+  pinMode(10,INPUT_PULLUP);
 
-    while(digitalRead(10)); // wait for user input
-    delay(1000); // wait one second before beginning sequence
+  digitalWrite(3,LOW);   // Motor off
+  digitalWrite(9,LOW);   // Disable brake
+  digitalWrite(12,LOW); // Set direction
+
+  while(digitalRead(10)); // wait for user input
+  delay(1000); // wait one second before beginning sequence
 }
 
 void loop() {
@@ -75,7 +75,7 @@ void loop() {
   }
 
   shutdown();
-  while(digitalRead(10)); // hold until reset
+  while(1); // hold until reset
 }
 
 void count() {
@@ -92,7 +92,7 @@ void setSpeed(double target_rpm) {
   delay(100);
   current_rpm = getSpeed(100000); 
 
-  // Print time [mcs], voltage [0-255], speed [rpm], pulses
+  // Print time [ms], voltage [0-255], speed [rpm], pulses
   Serial.println(String(millis())
     +"\t"
     +String(int(v_motor))
@@ -102,7 +102,7 @@ void setSpeed(double target_rpm) {
     +String(pulses));
 
   err = target_rpm - current_rpm;
-  // only calculate d_err if use_deriv is 1, else 0
+  // only calculate d_err if use_deriv is true, else 0
   d_err = use_deriv?(err - err_old):0;
   v_motor += k_prop*err + k_deriv*d_err;
   err_old = err;
