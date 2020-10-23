@@ -4,30 +4,30 @@
 #define PITCH     8 // mm per rev
 #define PULSES  374 // pulses per rev
 
-// global settings
-// k is coeff for proportional term
-// c is coeff for derivative term
-double k          = 0.1,
-       c          = 0.1;
-int    targetSpd1 = 35, // mm per s
-       targetSpd2 = 20,
-       targetSpd3 = 10, // slowest speed possible
-       targetSpd4 = 10,
-       dist2      = 20, // mm
-       dist4      = 60;
+// global settings and flags
+// k_prop is coeff for proportional term
+// k_deriv is coeff for derivative term
+double k_prop     = 0.1,
+       k_deriv    = 0.1;
+int    use_deriv  =   0; // flag
+       targetSpd1 =  35, // mm per s
+       targetSpd2 =  20,
+       targetSpd3 =   5, // slowest speed possible
+       targetSpd4 =  10,
+       dist2      =  20, // mm
+       dist4      =  60;
 
-// global vars and flags
+// global vars
 volatile long int pulses = 0;
 double v_motor           = 0, 
        current_rpm       = 0,
        err               = 0,
        err_old           = 0,
-       d_err             = 0,
-       use_derivative    = 0; // flag
+       d_err             = 0;
 
 void setup() {
     Serial.begin(115200);
-    
+
     attachInterrupt(digitalPinToInterrupt(2),count,RISING);
     
     pinMode(12,OUTPUT); // Dir
@@ -39,9 +39,9 @@ void setup() {
     // limit switch
     pinMode(10,INPUT_PULLUP);
 
-    digitalWrite(3,LOW); // Motor off
-    digitalWrite(9,LOW); // Disable break
-    digitalWrite(12,HIGH);  // Set direction
+    digitalWrite(3,LOW);   // Motor off
+    digitalWrite(9,LOW);   // Disable brake
+    digitalWrite(12,HIGH); // Set direction
 
     while(digitalRead(10)); // wait for user input
     delay(1000); // wait one second before beginning sequence
@@ -102,9 +102,9 @@ void setSpeed(double target_rpm) {
     +String(pulses));
 
   err = target_rpm - current_rpm;
-  // only calculate d_err if use_derivative is 1, else 0
-  d_err = use_derivative?(err - err_old):0;
-  v_motor += k*err + c*d_err;
+  // only calculate d_err if use_deriv is 1, else 0
+  d_err = use_deriv?(err - err_old):0;
+  v_motor += k_prop*err + k_deriv*d_err;
   err_old = err;
 
   // cap voltage between 0 and 255
