@@ -7,12 +7,12 @@
 // global settings and flags
 // k_prop is coeff for proportional term
 // k_deriv is coeff for derivative term
-double k_prop     = 0.1,
+double k_prop     = 0.2,
        k_deriv    = 0.1;
-int    use_deriv  =   0; // flag
+int    use_deriv  =   1, // flag
        targetSpd1 =  35, // mm per s
        targetSpd2 =  20,
-       targetSpd3 =   5, // slowest speed possible
+       targetSpd3 =   6, // slowest speed possible
        targetSpd4 =  10,
        dist2      =  20, // mm
        dist4      =  60;
